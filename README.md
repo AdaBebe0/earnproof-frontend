@@ -2,7 +2,7 @@
 
 EarnProof is an open-source, privacy-focused income and payment verification protocol built on Stellar.
 
-This repository contains the Next.js web application for public education, developer-facing setup pages, public proof verification, and initial shells for issuer discovery and system status. Wallet authentication, worker workflows, and proof creation are planned but not yet implemented.
+This repository contains the Next.js web application for public education, developer-facing setup pages, wallet-authenticated proof creation, public proof verification, and initial shells for issuer discovery and system status.
 
 ## Product Positioning
 
@@ -31,6 +31,10 @@ Implemented:
 - Privacy page
 - Developer page
 - Public verification page connected to the backend proof verification endpoint
+- Worker proof creation route at `/proofs/create`
+- Freighter wallet challenge signing flow
+- Authenticated payment sync, payment listing, and manual classification controls
+- Minimum-income proof creation form
 - Issuer directory shell
 - Status page shell
 - Shared API client
@@ -39,12 +43,10 @@ Implemented:
 
 Planned next:
 
-- Freighter wallet connection
-- Wallet challenge authentication flow
-- Worker dashboard
-- Payment discovery and classification
-- Proof creation wizard
-- Proof revocation views
+- Verification-state component tests
+- Proof revocation controls
+- Richer worker dashboard around the create-proof flow
+- Fixture-backed smoke tests
 
 ## Tech Stack
 
