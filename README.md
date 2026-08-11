@@ -32,7 +32,7 @@ Implemented:
 - Developer page
 - Public verification page connected to the backend proof verification endpoint
 - Worker proof creation route at `/proofs/create`
-- Freighter wallet challenge signing flow
+- Freighter wallet challenge signing flow through `@stellar/freighter-api`
 - Authenticated payment sync, payment listing, and manual classification controls
 - Minimum-income proof creation form
 - Issuer directory shell
@@ -54,6 +54,7 @@ Planned next:
 - React
 - TypeScript
 - Tailwind CSS
+- Freighter API
 - TanStack Query
 - React Hook Form
 - Zod
@@ -116,6 +117,7 @@ No secret keys belong in this frontend repository or any public environment vari
 ```bash
 npm run lint
 npm run build
+npm audit --omit=dev
 ```
 
 ## Privacy and UX Requirements
