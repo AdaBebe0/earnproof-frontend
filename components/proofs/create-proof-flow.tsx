@@ -1,23 +1,9 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { getAddress, requestAccess, signMessage } from "@stellar/freighter-api";
 import { appConfig } from "@/config/app";
 import { apiClient, bearer } from "@/lib/api/client";
-
-type FreighterApi = {
-  getPublicKey?: () => Promise<string | { publicKey?: string; address?: string }>;
-  requestAccess?: () => Promise<string | { publicKey?: string; address?: string }>;
-  signMessage?: (
-    message: string,
-    options?: { networkPassphrase?: string; address?: string },
-  ) => Promise<string | { signedMessage?: string; signature?: string }>;
-};
-
-declare global {
-  interface Window {
-    freighterApi?: FreighterApi;
-  }
-}
 
 type SessionUser = {
   id: string;
@@ -479,28 +465,37 @@ function Field({
 }
 
 async function getFreighterAddress() {
-  const api = window.freighterApi;
-  const response = await api?.requestAccess?.().catch(() => null);
-  const fallback = response ?? (await api?.getPublicKey?.().catch(() => null));
-
-  if (typeof fallback === "string") {
-    return fallback;
+  const access = await requestAccess().catch(() => null);
+  if (access?.address) {
+    return access.address;
   }
 
-  return fallback?.publicKey ?? fallback?.address ?? null;
+  const address = await getAddress().catch(() => null);
+  return address?.address ?? null;
 }
 
 async function signFreighterMessage(message: string, walletAddress: string) {
-  const response = await window.freighterApi
-    ?.signMessage?.(message, {
+  const response = await signMessage(message, {
       networkPassphrase: appConfig.stellarNetworkPassphrase,
       address: walletAddress,
     })
     .catch(() => null);
 
-  if (typeof response === "string") {
-    return response;
+  if (!response?.signedMessage) {
+    return null;
   }
 
-  return response?.signedMessage ?? response?.signature ?? null;
+  if (typeof response.signedMessage === "string") {
+    return response.signedMessage;
+  }
+
+  return bytesToBase64(response.signedMessage);
+}
+
+function bytesToBase64(value: Uint8Array) {
+  let binary = "";
+  value.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
 }
