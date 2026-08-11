@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 
 type VerificationResult =
@@ -61,7 +62,8 @@ const statusStyles: Record<VerifyProofResponse["status"], string> = {
 };
 
 export function VerifyProofForm() {
-  const [input, setInput] = useState("");
+  const searchParams = useSearchParams();
+  const [input, setInput] = useState(() => searchParams.get("proof") ?? "");
   const [result, setResult] = useState<VerifyProofResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

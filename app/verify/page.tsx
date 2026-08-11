@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PageHeading } from "@/components/common/page-heading";
 import { PublicShell } from "@/components/layout/public-shell";
 import { VerifyProofForm } from "@/components/verification/verify-proof-form";
@@ -11,7 +12,15 @@ export default function VerifyPage() {
           eyebrow="Verification"
           title="Check an EarnProof credential"
         />
-        <VerifyProofForm />
+        <Suspense
+          fallback={
+            <div className="mt-10 rounded-lg border border-white/10 bg-slate-950 p-5 text-sm text-slate-300">
+              Loading verification form...
+            </div>
+          }
+        >
+          <VerifyProofForm />
+        </Suspense>
       </section>
     </PublicShell>
   );
