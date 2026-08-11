@@ -23,3 +23,9 @@ export async function apiClient<TResponse>({
 
   return response.json() as Promise<TResponse>;
 }
+
+export function bearer(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}

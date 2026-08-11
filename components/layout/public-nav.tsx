@@ -10,6 +10,7 @@ const navItems = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/privacy", label: "Privacy" },
   { href: "/developers", label: "Developers" },
+  { href: "/proofs/create", label: "Create proof" },
   { href: "/verify", label: "Verify" },
   { href: "/issuers", label: "Issuers" },
   { href: "/status", label: "Status" },

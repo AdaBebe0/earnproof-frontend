@@ -1,0 +1,506 @@
+"use client";
+
+import { FormEvent, useMemo, useState } from "react";
+import { appConfig } from "@/config/app";
+import { apiClient, bearer } from "@/lib/api/client";
+
+type FreighterApi = {
+  getPublicKey?: () => Promise<string | { publicKey?: string; address?: string }>;
+  requestAccess?: () => Promise<string | { publicKey?: string; address?: string }>;
+  signMessage?: (
+    message: string,
+    options?: { networkPassphrase?: string; address?: string },
+  ) => Promise<string | { signedMessage?: string; signature?: string }>;
+};
+
+declare global {
+  interface Window {
+    freighterApi?: FreighterApi;
+  }
+}
+
+type SessionUser = {
+  id: string;
+  walletAddress: string;
+  walletHash: string;
+  role: string;
+};
+
+type PaymentClassification =
+  | "INCOME"
+  | "REIMBURSEMENT"
+  | "PERSONAL_TRANSFER"
+  | "UNKNOWN"
+  | "EXCLUDED";
+
+type Payment = {
+  id: string;
+  stellarTransactionHash: string;
+  sourceAddress: string;
+  assetCode: string;
+  assetIssuer: string | null;
+  occurredAt: string;
+  classification: PaymentClassification;
+  isEligible: boolean;
+};
+
+type ProofResponse = {
+  proofId: string;
+  status: string;
+  verificationUrl: string;
+  credential: {
+    proof: {
+      credentialHash: string;
+      signature: string;
+    };
+  };
+};
+
+const SESSION_KEY = "earnproof.session";
+
+export function CreateProofFlow() {
+  const initialSession = useMemo(() => readStoredSession(), []);
+  const [token, setToken] = useState<string | null>(
+    () => initialSession?.token ?? null,
+  );
+  const [user, setUser] = useState<SessionUser | null>(
+    () => initialSession?.user ?? null,
+  );
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [thresholdAmount, setThresholdAmount] = useState("100");
+  const [periodStart, setPeriodStart] = useState("2026-08-01");
+  const [periodEnd, setPeriodEnd] = useState("2026-08-31");
+  const [proof, setProof] = useState<ProofResponse | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const selectedIncomePayments = useMemo(
+    () =>
+      payments.filter(
+        (payment) =>
+          selected.includes(payment.id) &&
+          payment.classification === "INCOME" &&
+          payment.isEligible,
+      ),
+    [payments, selected],
+  );
+
+  async function connectWallet() {
+    setError(null);
+    setStatus("Requesting Freighter wallet access...");
+    const walletAddress = await getFreighterAddress();
+    if (!walletAddress) {
+      setStatus(null);
+      setError("Freighter was not found or did not return a Stellar address.");
+      return;
+    }
+
+    const challenge = await apiClient<{
+      id: string;
+      message: string;
+      expiresAt: string;
+    }>({
+      path: "/auth/challenge",
+      method: "POST",
+      body: JSON.stringify({ walletAddress }),
+    });
+
+    setStatus("Waiting for wallet signature...");
+    const signature = await signFreighterMessage(challenge.message, walletAddress);
+    if (!signature) {
+      setStatus(null);
+      setError("Wallet did not return a signature for the challenge.");
+      return;
+    }
+
+    const verified = await apiClient<{
+      user: SessionUser;
+      session: { token: string; tokenType: "Bearer" };
+    }>({
+      path: "/auth/verify",
+      method: "POST",
+      body: JSON.stringify({
+        challengeId: challenge.id,
+        walletAddress,
+        signature,
+      }),
+    });
+
+    window.localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ token: verified.session.token, user: verified.user }),
+    );
+    setToken(verified.session.token);
+    setUser(verified.user);
+    setStatus("Wallet authenticated.");
+  }
+
+  async function syncPayments() {
+    if (!token) {
+      return;
+    }
+
+    setError(null);
+    setStatus("Syncing incoming Stellar testnet payments...");
+    await apiClient({
+      path: "/payments/sync",
+      method: "POST",
+      headers: bearer(token),
+    });
+    await refreshPayments(token);
+    setStatus("Payments synced.");
+  }
+
+  async function refreshPayments(activeToken = token) {
+    if (!activeToken) {
+      return;
+    }
+
+    const response = await apiClient<Payment[]>({
+      path: "/payments",
+      headers: bearer(activeToken),
+    });
+    setPayments(response);
+  }
+
+  async function updateClassification(
+    paymentId: string,
+    classification: PaymentClassification,
+  ) {
+    if (!token) {
+      return;
+    }
+
+    setError(null);
+    await apiClient<Payment>({
+      path: `/payments/${paymentId}/classification`,
+      method: "PATCH",
+      headers: bearer(token),
+      body: JSON.stringify({ classification }),
+    });
+    await refreshPayments(token);
+  }
+
+  async function createProof(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token) {
+      setError("Connect a wallet before creating a proof.");
+      return;
+    }
+
+    if (selectedIncomePayments.length === 0) {
+      setError("Select at least one eligible income payment.");
+      return;
+    }
+
+    setError(null);
+    setProof(null);
+    setStatus("Creating signed minimum-income proof...");
+
+    const created = await apiClient<ProofResponse>({
+      path: "/proofs/minimum-income",
+      method: "POST",
+      headers: bearer(token),
+      body: JSON.stringify({
+        selectedPaymentIds: selectedIncomePayments.map((payment) => payment.id),
+        thresholdAmount,
+        assetCode: selectedIncomePayments[0].assetCode,
+        assetIssuer: selectedIncomePayments[0].assetIssuer ?? undefined,
+        periodStart: `${periodStart}T00:00:00.000Z`,
+        periodEnd: `${periodEnd}T23:59:59.000Z`,
+        expiresInDays: 30,
+      }),
+    });
+
+    setProof(created);
+    setStatus("Proof created.");
+  }
+
+  function disconnect() {
+    window.localStorage.removeItem(SESSION_KEY);
+    setToken(null);
+    setUser(null);
+    setPayments([]);
+    setSelected([]);
+    setProof(null);
+    setStatus(null);
+    setError(null);
+  }
+
+  return (
+    <div className="mt-10 grid gap-8">
+      <section className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Wallet</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Authenticate with a Stellar testnet wallet before syncing payments.
+          </p>
+        </div>
+        {user ? (
+          <div className="grid gap-3 text-sm text-slate-300">
+            <p className="break-words">
+              Connected as <span className="text-cyan-200">{user.walletAddress}</span>
+            </p>
+            <button
+              className="w-fit rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-white"
+              onClick={disconnect}
+              type="button"
+            >
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <button
+            className="w-fit rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950"
+            onClick={connectWallet}
+            type="button"
+          >
+            Connect Freighter
+          </button>
+        )}
+      </section>
+
+      <section className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Payments</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Sync incoming payments, mark qualifying income, then select the
+              payments to include in the proof calculation.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              disabled={!token}
+              onClick={() => refreshPayments()}
+              type="button"
+            >
+              Refresh
+            </button>
+            <button
+              className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+              disabled={!token}
+              onClick={syncPayments}
+              type="button"
+            >
+              Sync
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          {payments.length === 0 ? (
+            <p className="rounded-md border border-white/10 bg-slate-950 p-4 text-sm text-slate-400">
+              No payments loaded yet.
+            </p>
+          ) : (
+            payments.map((payment) => (
+              <PaymentRow
+                isSelected={selected.includes(payment.id)}
+                key={payment.id}
+                onClassify={(classification) =>
+                  updateClassification(payment.id, classification)
+                }
+                onToggle={() =>
+                  setSelected((current) =>
+                    current.includes(payment.id)
+                      ? current.filter((id) => id !== payment.id)
+                      : [...current, payment.id],
+                  )
+                }
+                payment={payment}
+              />
+            ))
+          )}
+        </div>
+      </section>
+
+      <form
+        className="grid gap-5 rounded-lg border border-white/10 bg-white/[0.04] p-5"
+        onSubmit={createProof}
+      >
+        <div>
+          <h2 className="text-xl font-semibold text-white">Minimum Income Proof</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            The public credential discloses the threshold, period, asset,
+            qualifying payment count, wallet hash, and proof status.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field
+            label="Threshold"
+            onChange={setThresholdAmount}
+            type="text"
+            value={thresholdAmount}
+          />
+          <Field
+            label="Period start"
+            onChange={setPeriodStart}
+            type="date"
+            value={periodStart}
+          />
+          <Field
+            label="Period end"
+            onChange={setPeriodEnd}
+            type="date"
+            value={periodEnd}
+          />
+        </div>
+        <button
+          className="w-fit rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+          disabled={!token || selectedIncomePayments.length === 0}
+          type="submit"
+        >
+          Create proof
+        </button>
+      </form>
+
+      {status || error || proof ? (
+        <section className="rounded-lg border border-white/10 bg-slate-950 p-5 text-sm leading-6">
+          {status ? <p className="text-slate-300">{status}</p> : null}
+          {error ? <p className="text-rose-200">{error}</p> : null}
+          {proof ? (
+            <div className="mt-4 grid gap-2 text-slate-300">
+              <p>
+                Proof ID: <span className="text-cyan-200">{proof.proofId}</span>
+              </p>
+              <p className="break-words">
+                Credential hash:{" "}
+                <span className="text-cyan-200">
+                  {proof.credential.proof.credentialHash}
+                </span>
+              </p>
+              <a
+                className="w-fit text-cyan-200 underline underline-offset-4"
+                href={`/verify?proof=${encodeURIComponent(proof.proofId)}`}
+              >
+                Open public verification
+              </a>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function readStoredSession() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.localStorage.getItem(SESSION_KEY);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(stored) as { token: string; user: SessionUser };
+  } catch {
+    window.localStorage.removeItem(SESSION_KEY);
+    return null;
+  }
+}
+
+function PaymentRow({
+  payment,
+  isSelected,
+  onToggle,
+  onClassify,
+}: {
+  payment: Payment;
+  isSelected: boolean;
+  onToggle: () => void;
+  onClassify: (classification: PaymentClassification) => void;
+}) {
+  const canSelect = payment.classification === "INCOME" && payment.isEligible;
+
+  return (
+    <div className="grid gap-3 rounded-md border border-white/10 bg-slate-950 p-4 text-sm text-slate-300 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <input
+        aria-label="Select payment"
+        checked={isSelected}
+        disabled={!canSelect}
+        onChange={onToggle}
+        type="checkbox"
+      />
+      <div className="min-w-0">
+        <p className="font-medium text-white">
+          {payment.assetCode} incoming payment
+        </p>
+        <p className="mt-1 break-words text-xs text-slate-500">
+          {payment.stellarTransactionHash}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          {new Date(payment.occurredAt).toLocaleString()}
+        </p>
+      </div>
+      <select
+        className="rounded-md border border-white/10 bg-slate-900 px-3 py-2 text-white"
+        onChange={(event) =>
+          onClassify(event.target.value as PaymentClassification)
+        }
+        value={payment.classification}
+      >
+        <option value="UNKNOWN">Unknown</option>
+        <option value="INCOME">Income</option>
+        <option value="REIMBURSEMENT">Reimbursement</option>
+        <option value="PERSONAL_TRANSFER">Personal transfer</option>
+        <option value="EXCLUDED">Excluded</option>
+      </select>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  type,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  type: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-medium text-slate-200">
+      {label}
+      <input
+        className="rounded-md border border-white/10 bg-slate-900 px-4 py-3 text-white"
+        onChange={(event) => onChange(event.target.value)}
+        type={type}
+        value={value}
+      />
+    </label>
+  );
+}
+
+async function getFreighterAddress() {
+  const api = window.freighterApi;
+  const response = await api?.requestAccess?.().catch(() => null);
+  const fallback = response ?? (await api?.getPublicKey?.().catch(() => null));
+
+  if (typeof fallback === "string") {
+    return fallback;
+  }
+
+  return fallback?.publicKey ?? fallback?.address ?? null;
+}
+
+async function signFreighterMessage(message: string, walletAddress: string) {
+  const response = await window.freighterApi
+    ?.signMessage?.(message, {
+      networkPassphrase: appConfig.stellarNetworkPassphrase,
+      address: walletAddress,
+    })
+    .catch(() => null);
+
+  if (typeof response === "string") {
+    return response;
+  }
+
+  return response?.signedMessage ?? response?.signature ?? null;
+}
