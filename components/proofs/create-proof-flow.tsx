@@ -215,7 +215,7 @@ export function CreateProofFlow() {
   }
 
   return (
-    <div className="mt-10 grid gap-8">
+    <div className="grid gap-8 sm:gap-10">
       <section className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5">
         <div>
           <h2 className="text-xl font-semibold text-white">Wallet</h2>
@@ -229,7 +229,7 @@ export function CreateProofFlow() {
               Connected as <span className="text-cyan-200">{user.walletAddress}</span>
             </p>
             <button
-              className="w-fit rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-white"
+              className="h-10 w-fit rounded-md border border-white/15 px-4 text-xs font-semibold text-white"
               onClick={disconnect}
               type="button"
             >
@@ -238,7 +238,7 @@ export function CreateProofFlow() {
           </div>
         ) : (
           <button
-            className="w-fit rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950"
+            className="h-10 w-fit rounded-md bg-cyan-300 px-4 text-xs font-semibold text-slate-950"
             onClick={connectWallet}
             type="button"
           >
@@ -248,7 +248,7 @@ export function CreateProofFlow() {
       </section>
 
       <section className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-xl font-semibold text-white">Payments</h2>
             <p className="mt-2 text-sm leading-6 text-slate-300">
@@ -258,7 +258,7 @@ export function CreateProofFlow() {
           </div>
           <div className="flex gap-2">
             <button
-              className="rounded-md border border-white/15 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="h-10 rounded-md border border-white/15 px-4 text-xs font-semibold text-white disabled:opacity-50"
               disabled={!token}
               onClick={() => refreshPayments()}
               type="button"
@@ -266,7 +266,7 @@ export function CreateProofFlow() {
               Refresh
             </button>
             <button
-              className="rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+              className="h-10 rounded-md bg-cyan-300 px-4 text-xs font-semibold text-slate-950 disabled:opacity-50"
               disabled={!token}
               onClick={syncPayments}
               type="button"
@@ -304,7 +304,7 @@ export function CreateProofFlow() {
       </section>
 
       <form
-        className="grid gap-5 rounded-lg border border-white/10 bg-white/[0.04] p-5"
+        className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5"
         onSubmit={createProof}
       >
         <div>
@@ -335,7 +335,7 @@ export function CreateProofFlow() {
           />
         </div>
         <button
-          className="w-fit rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+          className="h-10 w-fit rounded-md bg-cyan-300 px-4 text-xs font-semibold text-slate-950 disabled:opacity-50"
           disabled={!token || selectedIncomePayments.length === 0}
           type="submit"
         >
@@ -404,7 +404,7 @@ function PaymentRow({
   const canSelect = payment.classification === "INCOME" && payment.isEligible;
 
   return (
-    <div className="grid gap-3 rounded-md border border-white/10 bg-slate-950 p-4 text-sm text-slate-300 md:grid-cols-[auto_1fr_auto] md:items-center">
+    <div className="grid gap-3 rounded-md border border-white/10 bg-slate-950 p-4 text-sm text-slate-300 sm:min-h-24 sm:grid-cols-[auto_1fr_auto] sm:items-center">
       <input
         aria-label="Select payment"
         checked={isSelected}
@@ -424,7 +424,7 @@ function PaymentRow({
         </p>
       </div>
       <select
-        className="rounded-md border border-white/10 bg-slate-900 px-3 py-2 text-white"
+        className="h-10 rounded-md border border-white/10 bg-slate-900 px-3 text-white"
         onChange={(event) =>
           onClassify(event.target.value as PaymentClassification)
         }
@@ -455,7 +455,7 @@ function Field({
     <label className="grid gap-2 text-sm font-medium text-slate-200">
       {label}
       <input
-        className="rounded-md border border-white/10 bg-slate-900 px-4 py-3 text-white"
+        className="h-11 rounded-md border border-white/10 bg-slate-900 px-4 text-white"
         onChange={(event) => onChange(event.target.value)}
         type={type}
         value={value}
