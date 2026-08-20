@@ -94,25 +94,37 @@ export function VerifyProofForm() {
   }
 
   return (
-    <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,560px)_1fr]">
+    <div className="grid gap-4">
       <form
-        className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5"
+        className="grid gap-[18px] rounded-lg border border-white/10 bg-white/[0.04] p-5 sm:p-6"
         onSubmit={onSubmit}
       >
-        <label className="text-sm font-medium text-slate-200" htmlFor="proof">
-          Proof ID or verification URL
+        <div>
+          <h2 className="text-2xl font-semibold leading-8">Verify a proof</h2>
+          <p className="mt-2 text-sm leading-5 text-slate-300">Complete the information below. Sensitive details remain private unless explicitly disclosed.</p>
+        </div>
+        <label className="grid gap-[7px] text-xs font-semibold text-slate-300" htmlFor="proof">
+          Proof ID
+          <input
+            className="h-[46px] rounded-lg border border-white/15 bg-transparent px-3 text-sm font-normal text-white placeholder:text-slate-500"
+            id="proof"
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="EP-8A42-91DC"
+            type="text"
+            value={input}
+          />
         </label>
-        <input
-          className="rounded-md border border-white/10 bg-slate-900 px-4 py-3 text-white placeholder:text-slate-500"
-          id="proof"
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="proof ID or https://api.example.com/api/v1/proofs/.../verify"
-          type="text"
-          value={input}
-        />
+        <label className="grid gap-[7px] text-xs font-semibold text-slate-300">
+          Verification method
+          <input className="h-[46px] rounded-lg border border-white/15 bg-transparent px-3 text-sm font-normal text-slate-500" disabled value="Public proof link" />
+        </label>
+        <div className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-3 text-sm leading-5">
+          <p className="font-medium text-cyan-200">Privacy protected</p>
+          <p className="mt-1.5 text-slate-300">Only the fields shown in the disclosure summary can be shared.</p>
+        </div>
         {error ? <p className="text-sm text-rose-200">{error}</p> : null}
         <button
-          className="w-fit rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-11 w-fit rounded-lg bg-cyan-300 px-6 text-sm font-medium text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 sm:h-10"
           disabled={isLoading}
           type="submit"
         >
@@ -127,16 +139,11 @@ export function VerifyProofForm() {
 
 function VerificationPanel({ result }: { result: VerifyProofResponse | null }) {
   if (!result) {
-    return (
-      <div className="rounded-lg border border-white/10 bg-slate-950 p-5 text-sm leading-6 text-slate-300">
-        Verification results will appear here. Public verification does not show
-        exact hidden income, source transaction hashes, or full wallet history.
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-slate-950 p-5">
+    <div className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
       <div
         className={`inline-flex rounded-md border px-3 py-1 text-sm font-semibold uppercase ${statusStyles[result.status]}`}
       >
