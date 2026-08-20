@@ -3,45 +3,40 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { NetworkBadge } from "@/components/common/network-badge";
 
 const navItems = [
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/developers", label: "Developers" },
-  { href: "/proofs/create", label: "Create proof" },
-  { href: "/verify", label: "Verify" },
+  { href: "/how-it-works", label: "Product" },
+  { href: "/proofs/create", label: "Proofs" },
   { href: "/issuers", label: "Issuers" },
-  { href: "/status", label: "Status" },
+  { href: "/developers", label: "Developers" },
 ];
 
 export function PublicNav() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link className="flex items-center gap-3 text-lg font-semibold text-white" href="/">
+    <header className="border-b border-white/10 bg-slate-950">
+      <div className="flex h-[60px] w-full max-w-[1440px] items-center gap-3 px-3 sm:h-[72px] sm:gap-5 sm:px-5">
+        <Link className="flex min-w-0 flex-1 items-center gap-2.5 text-xl font-semibold text-white sm:max-w-[210px]" href="/">
           <Image
             alt="EarnProof"
-            className="h-8 w-8"
-            height={32}
+            className="h-6 w-6"
+            height={24}
             priority
             src="/logo.svg"
-            width={32}
+            width={24}
           />
           EarnProof
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm text-slate-300 lg:flex">
+        <nav className="hidden flex-1 items-center gap-6 text-sm text-slate-300 md:flex">
           {navItems.map((item) => (
             <Link
               className={
-                pathname === item.href
+                pathname === item.href || (item.href === "/proofs/create" && pathname.startsWith("/proofs"))
                   ? "font-medium text-cyan-200"
-                  : "hover:text-white"
+                  : "transition-colors hover:text-white"
               }
               href={item.href}
               key={item.href}
@@ -51,44 +46,10 @@ export function PublicNav() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="shrink-0">
           <NetworkBadge />
         </div>
-
-        <button
-          aria-expanded={isOpen}
-          aria-label="Toggle navigation"
-          className="rounded-md border border-white/15 px-3 py-2 text-sm text-white lg:hidden"
-          onClick={() => setIsOpen((value) => !value)}
-          type="button"
-        >
-          Menu
-        </button>
       </div>
-
-      {isOpen ? (
-        <div className="border-t border-white/10 px-6 py-4 lg:hidden">
-          <nav className="mx-auto grid max-w-6xl gap-3 text-sm text-slate-200">
-            {navItems.map((item) => (
-              <Link
-                className={
-                  pathname === item.href
-                    ? "font-medium text-cyan-200"
-                    : "hover:text-white"
-                }
-                href={item.href}
-                key={item.href}
-                onClick={() => setIsOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="pt-2">
-              <NetworkBadge />
-            </div>
-          </nav>
-        </div>
-      ) : null}
     </header>
   );
 }
