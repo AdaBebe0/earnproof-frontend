@@ -1,28 +1,21 @@
-import { InfoSection } from "@/components/common/info-section";
+import { FeatureGrid, MarketingHero, pageContainer } from "@/components/common/production-ui";
 import { PageHeading } from "@/components/common/page-heading";
 import { PublicShell } from "@/components/layout/public-shell";
+
+const features = [
+  { title: "Connect safely", description: "Approve a readable wallet challenge; EarnProof never requests a seed phrase or custody permission." },
+  { title: "Choose qualifying payments", description: "Select only eligible records and review exclusions before they contribute to a proof." },
+  { title: "Share only the claim", description: "Preview every disclosed field, hide exact amounts, and confirm the claim before sharing." },
+];
 
 export default function HowItWorksPage() {
   return (
     <PublicShell>
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <PageHeading
-          description="EarnProof turns qualifying Stellar payment activity into a signed claim that can be checked without exposing the worker's full wallet history."
-          eyebrow="Protocol flow"
-          title="A private proof from wallet payment to verification link"
-        />
-        <InfoSection
-          items={[
-            "A worker connects Freighter and signs a short-lived authentication challenge.",
-            "The backend indexes incoming Stellar testnet payments and normalizes supported assets.",
-            "The worker classifies which payments qualify as income and chooses a proof type.",
-            "EarnProof evaluates the condition, signs a credential, and creates a shareable verification link.",
-            "A verifier checks signature, expiration, revocation, issuer, network, asset, and claim result.",
-            "The verifier only sees the fields the proof intentionally discloses.",
-          ]}
-          title="MVP steps"
-        />
-      </section>
+      <div className={pageContainer}>
+        <PageHeading title="How EarnProof works" description="A clear path from wallet payments to a portable, privacy-preserving credential." />
+        <MarketingHero title="How EarnProof works" description="A clear path from wallet payments to a portable, privacy-preserving credential." action="See proof types" href="/proofs/create" />
+        <FeatureGrid items={features} />
+      </div>
     </PublicShell>
   );
 }
