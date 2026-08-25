@@ -30,55 +30,15 @@ export default function AboutPage() {
           </Link>
         </section>
 
-        {/* About Cards Grid */}
+        {/* Features Grid - 3 Cards */}
         <section className="grid gap-3 md:grid-cols-3">
-          {/* EarnProof Card */}
-          <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-            <h3 className="text-xl font-semibold leading-7 text-white">
-              EarnProof
-            </h3>
-            <p className="mt-2 text-sm leading-5 text-slate-300">
-              A portable credential that proves income eligibility without disclosing exact amounts, employer details, or transaction history.
-            </p>
-          </article>
-
-          {/* Veridatum Labs Card */}
-          <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-            <h3 className="text-xl font-semibold leading-7 text-white">
-              Veridatum Labs
-            </h3>
-            <p className="mt-2 text-sm leading-5 text-slate-300">
-              The open-source organization maintaining the EarnProof protocol, registry, and SDK. Governed by community contributions.
-            </p>
-          </article>
-
-          {/* Privacy-first Proofs Card */}
-          <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-            <h3 className="text-xl font-semibold leading-7 text-white">
-              Privacy-first proofs
-            </h3>
-            <p className="mt-2 text-sm leading-5 text-slate-300">
-              Disclose only the claims you choose. Verifiers see what the issuer attested—nothing more, no transaction history.
-            </p>
-          </article>
-
-          {/* Stellar Testnet Card */}
-          <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-            <h3 className="text-xl font-semibold leading-7 text-white">
-              Built on Stellar
-            </h3>
-            <p className="mt-2 text-sm leading-5 text-slate-300">
-              Use Stellar references andational Soroban commitments for portable, independently verifiable evidence.
-            </p>
-          </article>
-
           {/* Open Source Card */}
           <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
             <h3 className="text-xl font-semibold leading-7 text-white">
               Open source
             </h3>
             <p className="mt-2 text-sm leading-5 text-slate-300">
-              Inspect the protocol, schemas, and client libraries. Ownership and implementation are transparent and auditable.
+              Inspect the protocol, schemas, and client libraries. Ownership and implementation are transparent and auditable policy.
             </p>
           </article>
 
@@ -88,33 +48,19 @@ export default function AboutPage() {
               Non-custodial
             </h3>
             <p className="mt-2 text-sm leading-5 text-slate-300">
-              Wallet keys remain with their owners. EarnProof cannot move funds, recover seed phrases, or access private keys.
+              Wallet keys remain with their owners. EarnProof cannot move funds or recover seed phrases.
             </p>
           </article>
-        </section>
 
-        {/* CTA Section */}
-        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5 sm:p-7">
-          <h2 className="text-2xl font-semibold leading-8 text-white sm:text-3xl sm:leading-9">
-            Ready to create a proof?
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300 sm:mt-4 sm:text-base">
-            Start creating portable income proofs today. No signup required—just connect your wallet, select qualifying payments, and share a privacy-safe credential.
-          </p>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <Link
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-cyan-300/30 bg-cyan-300 px-6 text-sm font-medium text-slate-950 transition hover:bg-cyan-200 sm:h-10"
-              href="/proofs/create"
-            >
-              Create a proof
-            </Link>
-            <Link
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-white/15 px-6 text-sm font-medium transition hover:bg-white/[0.05] sm:h-10"
-              href="/verify"
-            >
-              Verify a proof
-            </Link>
-          </div>
+          {/* Built on Stellar Card */}
+          <article className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
+            <h3 className="text-xl font-semibold leading-7 text-white">
+              Built on Stellar
+            </h3>
+            <p className="mt-2 text-sm leading-5 text-slate-300">
+              Use Stellar references and national Soroban commitments for portable, independently verifiable evidence.
+            </p>
+          </article>
         </section>
       </main>
     </PublicShell>
