@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { PageHeading } from "@/components/common/page-heading";
 import { pageContainer } from "@/components/common/production-ui";
 import { PublicShell } from "@/components/layout/public-shell";
-import { faqData, getCategoryLabel } from "@/lib/faq-data";
+import { faqData } from "@/lib/faq-data";
 import type { FAQItem } from "@/lib/faq-data";
 
 interface FAQItemWithOpen extends FAQItem {
@@ -108,7 +108,7 @@ export default function FAQPage() {
         {displayedItems.length === 0 && (
           <section className="rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
             <p className="text-slate-300">
-              No results found for "{searchQuery}". Try a different search term.
+              No results found for &quot;{searchQuery}&quot;. Try a different search term.
             </p>
           </section>
         )}
