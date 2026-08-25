@@ -1,3 +1,6 @@
+/// <reference types="jest" />
+/// <reference types="@testing-library/jest-dom" />
+
 /**
  * @jest-environment jsdom
  */
@@ -54,7 +57,7 @@ describe("AboutPage", () => {
     it("should render hero section with h2 heading", () => {
       render(<AboutPage />);
       const h2Elements = screen.getAllByRole("heading", { level: 2 });
-      expect(h2Elements.some((el) => el.textContent === "About EarnProof")).toBe(
+      expect(h2Elements.some((el: Element) => el.textContent === "About EarnProof")).toBe(
         true
       );
     });
@@ -173,7 +176,7 @@ describe("AboutPage", () => {
       render(<AboutPage />);
       const links = screen.getAllByRole("link");
       const validRoutes = ["/how-it-works", "/proofs/create", "/verify"];
-      links.forEach((link) => {
+      links.forEach((link: Element) => {
         expect(validRoutes).toContain(link.getAttribute("href"));
       });
     });
@@ -304,7 +307,7 @@ describe("AboutPage", () => {
     it("should have visible text for all links", () => {
       render(<AboutPage />);
       const links = screen.getAllByRole("link");
-      links.forEach((link) => {
+      links.forEach((link: Element) => {
         expect(link.textContent).toBeTruthy();
       });
     });
@@ -329,7 +332,7 @@ describe("AboutPage", () => {
     it("should use semantic button elements for links", () => {
       render(<AboutPage />);
       const links = screen.getAllByRole("link");
-      links.forEach((link) => {
+      links.forEach((link: Element) => {
         expect(link.tagName).toBe("A");
       });
     });
@@ -345,8 +348,6 @@ describe("AboutPage", () => {
   describe("Responsive Layout", () => {
     it("should have responsive grid classes for cards", () => {
       const { container } = render(<AboutPage />);
-      const cardGrid = container.querySelector(".md\\:grid-cols-3");
-      // Check for responsive classes in className
       const html = container.innerHTML;
       expect(html).toContain("md:grid-cols-3");
     });
@@ -381,7 +382,7 @@ describe("AboutPage", () => {
     it("should not have any external links", () => {
       render(<AboutPage />);
       const links = screen.getAllByRole("link");
-      links.forEach((link) => {
+      links.forEach((link: Element) => {
         const href = link.getAttribute("href");
         expect(href).not.toMatch(/^http/i);
         expect(href).not.toMatch(/^www/i);
@@ -392,21 +393,20 @@ describe("AboutPage", () => {
   describe("Card Grid Layout", () => {
     it("should render cards in grid layout", () => {
       const { container } = render(<AboutPage />);
-      const gridSection = container.querySelector(".md\\:grid-cols-3");
-      expect(gridSection || container.innerHTML).toBeTruthy();
+      const html = container.innerHTML;
+      expect(html).toContain("md:grid-cols-3");
     });
 
     it("should have article elements for each card", () => {
       const { container } = render(<AboutPage />);
       const articles = container.querySelectorAll("article");
-      // Should have at least 6 cards (plus potentially more from sections)
       expect(articles.length).toBeGreaterThanOrEqual(6);
     });
 
     it("should render cards with consistent styling", () => {
       const { container } = render(<AboutPage />);
       const articles = container.querySelectorAll("article");
-      articles.forEach((article) => {
+      articles.forEach((article: Element) => {
         expect(article.className).toContain("rounded-lg");
         expect(article.className).toContain("border");
         expect(article.className).toContain("bg-white");
