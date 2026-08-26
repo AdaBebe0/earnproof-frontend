@@ -1,7 +1,6 @@
 name: CI
 
 on:
-  pull_request:
   push:
     branches: [main]
 
@@ -40,3 +39,5 @@ jobs:
           name: accessibility-report
           path: playwright-report/
           retention-days: 14
+      - name: Check route performance budgets
+        run: node scripts/performance/check-budgets.js
