@@ -15,4 +15,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run test -- --runInBand
       - run: npm run build
+      - name: Check route performance budgets
+        run: node scripts/performance/check-budgets.js
