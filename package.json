@@ -12,7 +12,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "perf:check": "node scripts/performance/check-budgets.js"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",
