@@ -14,7 +14,7 @@
     "lint": "eslint",
     "test": "jest",
     "test:e2e:visual": "playwright test --config=playwright.config.ts",
-    "test:e2e:visual:update": "playwright test --config=playwright.config.ts --update-snapshots"
+    "test:e2e:visual:update": "playwright test --config=playwright.config.ts --update-snapshots",
     "perf:check": "node scripts/performance/check-budgets.js"
   },
   "dependencies": {
