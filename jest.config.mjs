@@ -10,7 +10,7 @@ const config = {
   },
   // Playwright specs under e2e/ have their own runner (`npm run
   // test:e2e:a11y`) and must not be picked up by jest.
-  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/e2e/"],
+  testPathIgnorePatterns: ["[\\\\/]node_modules[\\\\/]", "[\\\\/]e2e[\\\\/]"],
 };
 
 export default createJestConfig(config);
