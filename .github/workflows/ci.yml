@@ -43,6 +43,7 @@ jobs:
           path: |
             e2e/visual/.report
             e2e/visual/.test-results
+          include-hidden-files: true
           retention-days: 14
       - name: Check route performance budgets
         run: node scripts/performance/check-budgets.js
