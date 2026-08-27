@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { getAddress, requestAccess, signMessage } from "@stellar/freighter-api";
+import type { getAddress, requestAccess, signMessage } from "@stellar/freighter-api";
 import { appConfig } from "@/config/app";
 import { apiClient, bearer } from "@/lib/api/client";
 
@@ -464,18 +464,33 @@ function Field({
   );
 }
 
+// The Freighter wallet SDK is loaded on demand, only once a worker actually
+// starts the connect flow on this route. This keeps `@stellar/freighter-api`
+// out of the initial First Load JS for /proofs/create (and, by construction,
+// out of every public route that never renders this component).
+async function loadFreighter(): Promise<{
+  getAddress: typeof getAddress;
+  requestAccess: typeof requestAccess;
+  signMessage: typeof signMessage;
+}> {
+  return import("@stellar/freighter-api");
+}
+
 async function getFreighterAddress() {
-  const access = await requestAccess().catch(() => null);
+  const freighter = await loadFreighter();
+  const access = await freighter.requestAccess().catch(() => null);
   if (access?.address) {
     return access.address;
   }
 
-  const address = await getAddress().catch(() => null);
+  const address = await freighter.getAddress().catch(() => null);
   return address?.address ?? null;
 }
 
 async function signFreighterMessage(message: string, walletAddress: string) {
-  const response = await signMessage(message, {
+  const freighter = await loadFreighter();
+  const response = await freighter
+    .signMessage(message, {
       networkPassphrase: appConfig.stellarNetworkPassphrase,
       address: walletAddress,
     })

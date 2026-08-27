@@ -23,6 +23,16 @@ const eslintConfig = defineConfig([
       "react-hooks/rules-of-hooks": "off",
     },
   },
+  {
+    // The performance budget scripts are plain Node CommonJS tooling that
+    // runs directly via `node scripts/performance/*.js` in CI, outside the
+    // Next.js bundler, so CommonJS `require`/`module.exports` is the
+    // correct pattern here rather than an app-code smell.
+    files: ["scripts/performance/**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
