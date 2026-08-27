@@ -14,7 +14,7 @@
     "lint": "eslint",
     "test": "jest",
     "test:e2e:a11y": "playwright test",
-    "test:e2e:a11y:report": "playwright show-report"
+    "test:e2e:a11y:report": "playwright show-report",
     "perf:check": "node scripts/performance/check-budgets.js"
   },
   "dependencies": {
