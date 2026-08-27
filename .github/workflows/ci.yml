@@ -16,6 +16,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run test -- --runInBand
       - run: npm run build
 
   visual-regression:
@@ -43,3 +44,5 @@ jobs:
             e2e/visual/.report
             e2e/visual/.test-results
           retention-days: 14
+      - name: Check route performance budgets
+        run: node scripts/performance/check-budgets.js

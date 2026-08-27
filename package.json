@@ -15,6 +15,7 @@
     "test": "jest",
     "test:e2e:visual": "playwright test --config=playwright.config.ts",
     "test:e2e:visual:update": "playwright test --config=playwright.config.ts --update-snapshots"
+    "perf:check": "node scripts/performance/check-budgets.js"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",
@@ -40,6 +41,7 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   },
   "overrides": {
