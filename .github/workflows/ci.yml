@@ -20,6 +20,7 @@ jobs:
       - run: npm run build
 
   accessibility:
+  visual-regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +40,21 @@ jobs:
         with:
           name: accessibility-report
           path: playwright-report/
+      - run: npm run build
+      - name: Run visual regression suite
+        run: npm run test:e2e:visual
+      - name: Upload visual diff artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          # Fixtures are 100% synthetic (see e2e/visual/fixtures) — never
+          # real user data, wallets, or credentials — so this artifact is
+          # safe to retain for triage.
+          path: |
+            e2e/visual/.report
+            e2e/visual/.test-results
+          include-hidden-files: true
           retention-days: 14
       - name: Check route performance budgets
         run: node scripts/performance/check-budgets.js
